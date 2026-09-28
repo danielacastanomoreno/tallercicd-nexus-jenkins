@@ -1,0 +1,525 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+
+% Paquete de estilos personalizados Icesi / IasLab
+\usepackage{custombeamer}
+
+% Definición de colores adicionales para tablas y código
+\definecolor{cbBorder}{HTML}{D1D5DB}
+\definecolor{cbRowLight}{HTML}{F3F4F6}
+
+% Configuración de Listings para YAML y Bash
+\lstdefinestyle{yamllst}{
+    backgroundcolor=\color{cbLight},
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{cbBlue}\bfseries,
+    commentstyle=\color{cbMuted}\itshape,
+    stringstyle=\color{cbOrange},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{cbBorder},
+    showstringspaces=false,
+    tabsize=2
+}
+
+\lstdefinestyle{yamltiny}{
+    backgroundcolor=\color{cbLight},
+    basicstyle=\ttfamily\tiny,
+    keywordstyle=\color{cbBlue}\bfseries,
+    commentstyle=\color{cbMuted}\itshape,
+    stringstyle=\color{cbOrange},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{cbBorder},
+    showstringspaces=false,
+    tabsize=2
+}
+
+\begin{document}
+
+% ==============================================================================
+% PORTADA
+% ==============================================================================
+\titleSlideDarkMode
+  {GitHub Actions \& CI/CD}
+  {Workflows, Jobs, Steps, Runners Autohosteados y Despliegue}
+  {Prof. Alejandro Muñoz Bravo}
+  {Ingeniería de Software V $\bullet$ Universidad ICESI}
+
+% ==============================================================================
+% AGENDA
+% ==============================================================================
+\begin{frame}{Contenido de la Sesión}
+  \vspace{0.2cm}
+  \begin{enumerate}[itemsep=10pt]
+    \item \textbf{\color{cbBlue}01.} Fundamentos y Arquitectura de GitHub Actions
+    \item \textbf{\color{cbBlue}02.} Jerarquía de Componentes: Triggers, Jobs, Stages y Steps
+    \item \textbf{\color{cbBlue}03.} Comandos Shell (\texttt{run:}) vs. Acciones Reutilizables (\texttt{uses:})
+    \item \textbf{\color{cbBlue}04.} Comparativa Exhaustiva: \textbf{GitHub-Hosted vs. Self-Hosted Runners}
+    \item \textbf{\color{cbBlue}05.} Guía Paso a Paso: Construcción del Pipeline CI/CD del Taller
+  \end{enumerate}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 1: FUNDAMENTOS
+% ==============================================================================
+\sectionSlideSolid{01}{¿Qué es GitHub Actions?}{Motor de Automatización y CI/CD Integrado}
+
+\contentSlideBulletCard
+  {¿Qué es GitHub Actions?}
+  {
+    \begin{itemize}
+      \item \textbf{Plataforma CI/CD Nativa:} Integrada directamente en el repositorio sin servidores externos.
+      \item \textbf{Basada en Eventos:} Reacciona a sucesos del ciclo Git (\texttt{push}, \texttt{pull\_request}, etc.).
+      \item \textbf{Runners Aislados:} VMs efímeras provistas por GitHub (\texttt{ubuntu-latest}, \texttt{windows-latest}, \texttt{macos-latest}).
+      \item \textbf{Marketplace:} Miles de acciones oficiales y comunitarias listas para reutilizar.
+    \end{itemize}
+  }
+  {Principio Clave}
+  {
+    \textbf{Shift-Left Testing:}\\[0.15cm]
+    Detectar y corregir defectos en etapas tempranas mediante builds y tests automáticos en cada \textit{commit}.
+  }
+
+\contentSlideTwoCols
+  {Arquitectura y Flujo de Ejecución}
+  {Entidades Principales}
+  {
+    \begin{itemize}
+      \item \textbf{Workflow:} Archivo YAML en \texttt{.github/workflows/}.
+      \item \textbf{Events (on):} Disparadores del flujo.
+      \item \textbf{Jobs:} Tareas en un runner independiente.
+      \item \textbf{Steps:} Pasos atómicos secuenciales.
+    \end{itemize}
+  }
+  {Ciclo de Vida}
+  {
+    \begin{enumerate}
+      \item Evento ocurre en Git (\textit{Push} o \textit{PR}).
+      \item GitHub asigna una Máquina Virtual (\textit{Runner}).
+      \item Se ejecutan los Jobs (paralelo o secuencial).
+      \item Se reporta el estado (\textit{Pass / Fail}).
+    \end{enumerate}
+  }
+
+% ==============================================================================
+% SECCIÓN 2: JERARQUÍA DE COMPONENTES
+% ==============================================================================
+\sectionSlideSolid{02}{Jerarquía de Componentes}{Triggers, Jobs, Stages y Steps}
+
+\begin{frame}[fragile]{1. Triggers y Eventos (\texttt{on:})}
+  \vspace{0.1cm}
+  El bloque \textbf{\texttt{on:}} define \textit{cuándo} debe dispararse la ejecución del workflow.
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+name: Continuous Integration & Delivery
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Permite disparo manual desde la UI web
+  \end{lstlisting}
+  \vspace{0.1cm}
+  \begin{itemize}
+    \item \textbf{Filtros de rama:} Limita la ejecución a ramas estratégicas (\texttt{main}, \texttt{develop}).
+    \item \textbf{Filtros por ruta (\texttt{paths}):} Dispara el job solo si cambian carpetas específicas.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{2. Jobs y Runners (\texttt{jobs: <job\_id>})}
+  \vspace{0.1cm}
+  Cada \textbf{Job} corre en una máquina virtual limpia. Por defecto, se ejecutan en \textbf{paralelo}.
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Maven Tests
+        run: cd backend && mvn clean test
+  \end{lstlisting}
+  \vspace{0.1cm}
+  \begin{itemize}
+    \item \textbf{\texttt{runs-on:}} Especifica el SO del runner (\texttt{ubuntu-latest} es el estándar).
+    \item \textbf{Aislamiento total:} Los archivos de un job \textbf{no} existen en otro job a menos que se compartan como artefactos.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{3. Dependencias entre Jobs (\texttt{needs:})}
+  \vspace{0.1cm}
+  Para estructurar un pipeline secuencial (\textit{Stages}), se utiliza la directiva \textbf{\texttt{needs:}}.
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    ...
+  test-frontend:
+    runs-on: ubuntu-latest
+    ...
+  build-docker:
+    needs: [test-backend, test-frontend] # Espera a que ambos terminen OK
+    runs-on: ubuntu-latest
+    ...
+  \end{lstlisting}
+  \vspace{0.1cm}
+  \textbf{Regla de Oro:} Si cualquier job predecesor falla, los jobs dependientes se \textbf{cancelan automáticamente}.
+\end{frame}
+
+\begin{frame}[fragile]{4. Steps (\texttt{steps:})}
+  \vspace{0.1cm}
+  Un \textbf{Step} es una tarea ejecutable dentro del Job. Todos los steps de un job comparten el mismo entorno y disco.
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+    steps:
+      - name: Descargar codigo fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17 Temurin
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Ejecutar pruebas unitarias
+        run: cd backend && mvn test
+  \end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 3: COMANDOS VS ACCIONES
+% ==============================================================================
+\sectionSlideSolid{03}{Comandos y Acciones}{run: vs. uses: en la Práctica}
+
+\contentSlideTwoCols
+  {run: vs. uses: ¿Cuándo usar cuál?}
+  {Comandos Shell (\texttt{run:})}
+  {
+    \begin{itemize}
+      \item Ejecuta comandos directos del CLI del SO (\texttt{bash}, \texttt{sh}).
+      \item Ideal para compilar, probar o invocar herramientas locales:
+      \begin{itemize}
+        \item \texttt{mvn clean test}
+        \item \texttt{npm run build}
+        \item \texttt{docker compose up -d}
+      \end{itemize}
+    \end{itemize}
+  }
+  {Acciones Reutilizables (\texttt{uses:})}
+  {
+    \begin{itemize}
+      \item Módulos empaquetados del Marketplace de GitHub.
+      \item Se configuran mediante parámetros en \textbf{\texttt{with:}}.
+      \item Acciones esenciales:
+      \begin{itemize}
+        \item \texttt{actions/checkout@v4}
+        \item \texttt{actions/setup-node@v4}
+        \item \texttt{docker/build-push-action@v5}
+      \end{itemize}
+    \end{itemize}
+  }
+
+\begin{frame}[fragile]{Compartir Binarios entre Jobs: Upload \& Download Artifacts}
+  \vspace{0.1cm}
+  Como los runners son máquinas efímeras independientes, usamos artefactos para transferir archivos entre etapas:
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+# En Job 1: test-backend
+- name: Subir artefacto JAR
+  uses: actions/upload-artifact@v4
+  with:
+    name: backend-jar
+    path: backend/target/*.jar
+    retention-days: 1
+
+# En Job posterior: deploy
+- name: Descargar artefacto JAR
+  uses: actions/download-artifact@v4
+  with:
+    name: backend-jar
+    path: backend/target/
+  \end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 4: RUNNERS AUTOHOSTEADOS (NUEVA SECCIÓN DETALLADA)
+% ==============================================================================
+\sectionSlideSolid{04}{GitHub-Hosted vs. Self-Hosted}{Entornos Gestionados vs. Servidores Propios}
+
+\contentSlideBulletCard
+  {¿Qué es un Self-Hosted Runner?}
+  {
+    \begin{itemize}
+      \item \textbf{Agente Dedicado:} Software de GitHub (\texttt{actions-runner}) instalado en un servidor propio (ej. clúster IasLab \texttt{grid102}).
+      \item \textbf{Acceso a Red Privada:} Puede conectarse directamente a bases de datos internas, LAN o VPN ZeroTier sin abrir puertos a Internet.
+      \item \textbf{Hardware a la Medida:} Uso de servidores de alta capacidad (40 vCPUs, 62 GB RAM, GPUs para Deep Learning).
+      \item \textbf{Cero Costo de Minutos:} Ejecuciones ilimitadas sin consumir minutos del plan de GitHub.
+    \end{itemize}
+  }
+  {Casos de Uso Típicos}
+  {
+    \begin{itemize}
+      \item Despliegues en servidores de intranet corporativa o universitaria.
+      \item Tareas que requieren GPUs o hardware especializado.
+      \item Caches masivas en disco local (evita descargas constantes).
+    \end{itemize}
+  }
+
+\begin{frame}{Matriz Comparativa: GitHub-Hosted vs. Self-Hosted}
+  \vspace{-0.1cm}
+  \fontsize{7.5}{9.5}\selectfont
+  \renewcommand{\arraystretch}{1.12}
+  \begin{tabularx}{\textwidth}{|p{2.8cm}|X|X|}
+    \hline
+    \rowcolor{cbLight}
+    \textbf{Dimensión} & \textbf{GitHub-Hosted Runner} & \textbf{Self-Hosted Runner} \\ \hline
+    \textbf{Entorno \& Ciclo} & VM efímera (se destruye tras cada job). Disco 100\% limpio. & Host persistente. Workspace y archivos temporales permanecen. \\ \hline
+    \textbf{Acceso a Red / LAN} & Solo acceso público en Internet. Requiere VPN/túneles. & Acceso nativo a LAN, VPN (ZeroTier) y servicios internos (\texttt{grid100}, DBs). \\ \hline
+    \textbf{Mantenimiento} & GitHub actualiza el SO, parches y herramientas (Node, Java, Docker). & El administrador mantiene SO, Docker daemon, parches y herramientas. \\ \hline
+    \textbf{Cómputo / Hardware} & Estándar: 2 vCPU, 7 GB RAM. Hardware predeterminado. & Personalizado (ej. 40 vCPUs, 64 GB RAM, GPUs NVIDIA en \texttt{grid102}). \\ \hline
+    \textbf{Costos de Ejecución} & Facturación por minutos consumidos según plan. & Gratuito en minutos de GitHub (costo solo de hardware propio). \\ \hline
+  \end{tabularx}
+\end{frame}
+
+\begin{frame}[fragile]{Cambios en el YAML del Workflow para Self-Hosted}
+  \vspace{-0.1cm}
+  Para enrutar un Job a un servidor propio, se modifica la directiva \textbf{\texttt{runs-on:}} utilizando etiquetas (\textit{labels}):
+  \vspace{0.05cm}
+  \begin{lstlisting}[style=yamltiny]
+# Opcion A: Runner estandar de GitHub
+jobs:
+  deploy-cloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mvn clean test
+
+# Opcion B: Runner Autohosteado en Servidor Propio (ej. grid102 IasLab)
+jobs:
+  deploy-grid100:
+    runs-on: [ self-hosted, linux, x64, grid102 ]
+    steps:
+      - name: Limpiar workspace previo (por persistencia de disco)
+        uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Desplegar directamente en Docker local
+        run: docker compose -f docker-compose.prod.yml up -d
+  \end{lstlisting}
+\end{frame}
+
+\contentSlideTwoCols
+  {Seguridad: Consideraciones Críticas en Self-Hosted}
+  {Riesgos en Repositorios Públicos}
+  {
+    \begin{itemize}
+      \item \textbf{\color{cbOrange}¡Peligro con Forks y PRs!}\newline Un tercero podría enviar un PR con un script malicioso en el workflow que se ejecute en el servidor interno con acceso a la red de la empresa.
+      \item \textbf{Persistencia de Procesos:}\newline Un proceso zombie o un contenedor huérfano puede interferir con jobs futuros.
+    \end{itemize}
+  }
+  {Mejores Prácticas}
+  {
+    \begin{itemize}
+      \item Usar Self-Hosted \textbf{únicamente en repositorios privados} o de confianza interna.
+      \item Requerir aprobación manual para ejecuciones provenientes de colaboradores externos.
+      \item Utilizar \textbf{Runners Efímeros Contenerizados} (ej. \textit{Actions Runner Controller - ARC} sobre Kubernetes).
+    \end{itemize}
+  }
+
+% ==============================================================================
+% SECCIÓN 5: GUÍA DEL TALLER EVALUATIVO
+% ==============================================================================
+\sectionSlideSolid{05}{Guía de Construcción del Pipeline}{Estructura de los 4 Jobs del Taller}
+
+\begin{frame}{Estructura General del Pipeline a Construir}
+  \centering
+  \vspace{0.15cm}
+  \begin{tikzpicture}[node distance=0.9cm, auto,
+    block/.style={rectangle, draw=cbBlue, fill=cbLight, text=cbDark, thick, rounded corners, minimum height=0.8cm, minimum width=3.8cm, align=center},
+    stage/.style={rectangle, draw=cbPurple, fill=cbWhite, text=cbDark, thick, rounded corners, minimum height=0.8cm, minimum width=3.5cm, align=center},
+    arrow/.style={thick, ->, >=stealth, color=cbBlue}]
+
+    \node [block, fill=cbBlue, text=cbWhite] (event) {\textbf{Trigger: Push / PR en main}};
+    
+    \node [stage, below left=0.6cm and -0.6cm of event] (job1) {\textbf{Job 1: test-backend}\\ \tiny Maven Test + JAR Artifact};
+    \node [stage, below right=0.6cm and -0.6cm of event] (job2) {\textbf{Job 2: test-frontend}\\ \tiny Node Lint + Vite Build};
+    
+    \node [stage, below=1.9cm of event, fill=cbOrange!15, draw=cbOrange] (job3) {\textbf{Job 3: build-docker}\\ \tiny Multi-Stage Buildx (API + Web)};
+    \node [stage, below=0.6cm of job3, fill=cbGreen!15, draw=cbGreen] (job4) {\textbf{Job 4: smoke-test}\\ \tiny Docker Compose Up \& cURL};
+
+    \draw [arrow] (event) -| (job1);
+    \draw [arrow] (event) -| (job2);
+    \draw [arrow] (job1) |- (job3);
+    \draw [arrow] (job2) |- (job3);
+    \draw [arrow] (job3) -- (job4);
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Paso 1: Configurar Encabezado y Triggers}
+  \vspace{0.1cm}
+  Crear el archivo \texttt{.github/workflows/ci-cd.yml} y definir el nombre del flujo y los eventos:
+  \vspace{0.15cm}
+  \begin{lstlisting}[style=yamllst]
+name: CI/CD Pipeline - Product Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Aqui definiremos los 4 jobs de forma ordenada
+  \end{lstlisting}
+  \vspace{0.1cm}
+  \textbf{Objetivo:} Asegurar que el pipeline se dispare tanto al hacer \texttt{git push} directo como al abrir un \textit{Pull Request}.
+\end{frame}
+
+\begin{frame}[fragile]{Paso 2: Implementar Job 1 (\texttt{test-backend})}
+  \vspace{0.05cm}
+  Responsable de validar la lógica del microservicio Spring Boot:
+  \vspace{0.1cm}
+  \begin{lstlisting}[style=yamltiny]
+  test-backend:
+    name: Backend Unit Tests & Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Tests & Build JAR
+        run: cd backend && mvn clean package
+
+      - name: Upload Backend JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/*.jar
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Paso 3: Implementar Job 2 (\texttt{test-frontend})}
+  \vspace{0.05cm}
+  Responsable de validar tipado TypeScript y empaquetar la SPA en React:
+  \vspace{0.1cm}
+  \begin{lstlisting}[style=yamltiny]
+  test-frontend:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install & Run Lint
+        run: |
+          cd frontend
+          npm install
+          npm run lint
+
+      - name: Build SPA Bundle
+        run: cd frontend && npm run build
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Paso 4: Implementar Job 3 (\texttt{build-docker})}
+  \vspace{0.05cm}
+  Construye las imágenes Docker utilizando \textit{Docker Buildx}:
+  \vspace{0.1cm}
+  \begin{lstlisting}[style=yamltiny]
+  build-docker:
+    name: Build Multi-Stage Docker Images
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          tags: product-api:latest
+
+      - name: Build Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          tags: product-frontend:latest
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Paso 5: Implementar Job 4 (\texttt{smoke-test})}
+  \vspace{-0.1cm}
+  Despliega el stack multicontenedor y valida su salud con pruebas de humo:
+  \vspace{0.05cm}
+  \begin{lstlisting}[style=yamltiny]
+  smoke-test:
+    name: Compose Up & Smoke Testing
+    needs: [build-docker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start Stack with Docker Compose
+        run: docker compose up -d --build
+      - name: Wait for Backend Healthcheck
+        run: sleep 20
+      - name: Execute Smoke Test (cURL API)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/products)
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then exit 1; fi
+      - name: Stop Containers
+        if: always()
+        run: docker compose down
+  \end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% CONCLUSIÓN Y CIERRE
+% ==============================================================================
+\contentSlideQuoteStat
+  {Conclusión del Aprendizaje}
+  {100\%}
+  {Despliegues Reproducibles y Automatizados}
+  {"Un pipeline de CI/CD bien estructurado convierte el despliegue de software en una tarea rutinaria, predecible y segura, eliminando la incertidumbre de los despliegues manuales."}
+
+\begin{frame}{Preguntas de Reflexión y Puesta en Marcha}
+  \vspace{0.2cm}
+  \begin{enumerate}
+    \item \textbf{Fallos Rápidos:} ¿Por qué es crucial ejecutar las pruebas unitarias antes de comenzar la construcción de imágenes Docker?
+    \item \textbf{Caché de Dependencias:} ¿Qué beneficio ofrece el uso de \texttt{cache: 'maven'} y \texttt{cache: 'npm'} en el tiempo de ejecución del runner?
+    \item \textbf{Self-Hosted vs. Cloud:} ¿En qué escenario de IasLab convendría usar un runner en \texttt{grid102} en lugar de \texttt{ubuntu-latest}?
+    \item \textbf{Pruebas de Humo:} ¿Por qué validar un código HTTP 200 con \texttt{curl} nos da mayor certeza que solo verificar que el contenedor esté corriendo?
+  \end{enumerate}
+  \vspace{0.3cm}
+  \centering
+  \textbf{\color{cbBlue}¡Éxitos en el desarrollo del Taller Evaluativo! (Tiempo: 2 Horas)}
+\end{frame}
+
+\end{document}

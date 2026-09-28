@@ -1,0 +1,294 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\geometry{margin=0.68in, top=0.85in, bottom=0.78in, headheight=36pt, headsep=14pt}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{lastpage}
+\usepackage{setspace}
+\usepackage{listings}
+
+% Tipografía institucional Icesi (Sans-Serif Helvetica)
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Interlineado aumentado un 30% (setstretch 1.38) para mayor holgura y lectura óptima
+\setstretch{1.38}
+
+% Altura de celdas en tablas
+\renewcommand{\arraystretch}{1.25}
+
+% Paleta de Colores Oficial de los Programas Icesi
+\definecolor{icesiBlue}{HTML}{5454E9}       % Azul vibrante institucional
+\definecolor{icesiOrange}{HTML}{F0681A}     % Naranja acento
+\definecolor{icesiGreen}{HTML}{4CB978}      % Verde acento
+\definecolor{icesiPurple}{HTML}{865CF0}     % Púrpura acento
+\definecolor{icesiDark}{HTML}{1A1A1A}       % Texto principal oscuro
+\definecolor{icesiMuted}{HTML}{6B7280}      % Gris metadatos
+\definecolor{icesiBorder}{HTML}{D1D5DB}     % Líneas y bordes
+\definecolor{icesiRowLine}{HTML}{E5E7EB}    % Líneas de tabla
+\definecolor{icesiLight}{HTML}{F9FAFB}      % Fondo suave
+\definecolor{codeBackground}{HTML}{F3F4F6}  % Fondo código
+
+% Configuración de Listings
+\lstdefinestyle{bashstyle}{
+    backgroundcolor=\color{codeBackground},
+    commentstyle=\color{icesiMuted}\itshape,
+    keywordstyle=\color{icesiBlue}\bfseries,
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{icesiBorder},
+    language=bash
+}
+
+% =========================================================================
+% ENCABEZADO Y PIE DE PÁGINA ESTILO PROGRAMA DE CURSO ICESI
+% =========================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \begin{minipage}[c]{2.8cm}
+    \includegraphics[height=0.58cm]{logo-icesi.png}
+  \end{minipage}%
+  \hspace{0.15cm}%
+  {\color{icesiBorder}\vrule width 0.8pt height 0.60cm}%
+  \hspace{0.2cm}%
+  \begin{minipage}[c]{10.5cm}
+    \fontsize{7.5}{9.5}\selectfont\textbf{\color{icesiDark}UNIVERSIDAD ICESI} \\
+    \fontsize{7}{9}\selectfont\textbf{\color{icesiDark}PROGRAMA DE CURSO / TALLER EVALUATIVO: INGENIERÍA DE SOFTWARE V} \\
+    \fontsize{6.5}{8.5}\selectfont\color{icesiMuted}Período: 202620 $\bullet$ NRC: 11005 $\bullet$ Duración Máxima: 2 Horas
+  \end{minipage}%
+}
+\fancyhead[R]{\fontsize{7.5}{9.5}\selectfont\color{icesiMuted}Pág. \thepage\ de \pageref{LastPage}}
+
+% Barra horizontal multicolor característica del programa de curso
+\renewcommand{\headrule}{%
+  \vspace{0.08cm}%
+  \noindent%
+  \textcolor{icesiBlue}{\rule{0.60\textwidth}{1.8pt}}%
+  \textcolor{icesiOrange}{\rule{0.18\textwidth}{1.8pt}}%
+  \textcolor{icesiGreen}{\rule{0.11\textwidth}{1.8pt}}%
+  \textcolor{icesiPurple}{\rule{0.11\textwidth}{1.8pt}}%
+}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\fontsize{7.5}{9.5}\selectfont\color{icesiMuted}Ingeniería de Software V (09776 - TIC) $\bullet$ Taller CI/CD Contenerizado (Spring Boot + React + GitHub Actions)}
+\fancyfoot[R]{\fontsize{7.5}{9.5}\selectfont\color{icesiMuted}Universidad Icesi $\bullet$ DCSI}
+
+% =========================================================================
+% COMANDOS DE SECCIONES CON BADGE ESTILO PROGRAMA ICESI
+% =========================================================================
+\newcommand{\sectionBadge}[1]{%
+  \refstepcounter{section}%
+  \vspace{0.24cm}%
+  \noindent%
+  \colorbox{icesiBlue}{\color{white}\rule[-0.08cm]{0pt}{0.42cm}\hspace{0.16cm}\textbf{\normalsize \thesection}\hspace{0.16cm}}%
+  \hspace{0.18cm}%
+  {\fontsize{9.5}{12}\selectfont\textbf{\color{icesiDark}#1}}\\[-0.10cm]%
+  \noindent{\color{icesiDark}\rule{\textwidth}{0.8pt}}\vspace{0.10cm}%
+}
+
+\titleformat{\subsection}
+  {\color{icesiBlue}\normalfont\normalsize\bfseries}
+  {\thesubsection}{0.4em}{}
+\titlespacing*{\subsection}{0pt}{0.6ex plus 0.2ex minus .1ex}{0.2ex plus .1ex}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\begin{document}
+
+% =========================================================================
+% TÍTULO Y PRESENTACIÓN INICIAL (PÁGINA 1)
+% =========================================================================
+\noindent
+{\fontsize{8.5}{11}\selectfont\textbf{\color{icesiBlue}TALLER EVALUATIVO: PIPELINES DE CI/CD \& DESPLIEGUE CONTENERIZADO (TIEMPO: 2 HORAS)}}\\[0.06cm]
+{\fontsize{15}{18}\selectfont\textbf{Ingeniería de Software V}}\\[0.10cm]
+{\color{icesiRowLine}\hrule height 0.6pt}\vspace{0.10cm}
+
+\noindent
+{\color{icesiBlue}\textbf{\rule{2.5pt}{8.5pt}}}~\textbf{\fontsize{8.5}{11}\selectfont FACULTAD DE INGENIERÍA, DISEÑO Y CIENCIAS APLICADAS} \hfill
+{\color{icesiOrange}\textbf{\rule{2.5pt}{8.5pt}}}~\textbf{\fontsize{8.5}{11}\selectfont DEPARTAMENTO DE COMPUTACIÓN Y SISTEMAS INTELIGENTES}\\[0.06cm]
+{\color{icesiRowLine}\hrule height 0.6pt}\vspace{0.10cm}
+
+% =========================================================================
+% TABLA DE INFORMACIÓN Y METADATOS (ESTILO PROGRAMA DE CURSO)
+% =========================================================================
+\noindent
+{\color{icesiBlue}\textbf{\rule{2.5pt}{8.5pt}}}~\textbf{\fontsize{8.5}{11}\selectfont INFORMACIÓN DE LA ACTIVIDAD} \hfill {\fontsize{7.5}{9}\selectfont\color{icesiMuted}\textbf{IDENTIFICACIÓN}}\\[-0.22cm]
+{\color{icesiBorder}\hrule height 0.5pt}\vspace{0.05cm}
+
+\noindent
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries\color{icesiDark}\fontsize{7.5}{9.5}\selectfont}L{2.5cm}X!{\color{icesiBlue}\vrule width 0.8pt}>{\bfseries\color{icesiDark}\fontsize{7.5}{9.5}\selectfont}L{2.5cm}X}
+CÓDIGO: & 09776 - TIC & PERÍODO: & 202620 (Semestre 2026-2) \\ \hline
+\rowcolor{icesiLight}
+NRC / GRUPO: & 11005 / Grupo 001 & PONDERACIÓN: & 10.0\% (Taller Evaluativo) $\bullet$ Duración: 2 Horas \\ \hline
+POLÍTICA IAG: & Nivel 3: Colaboración Asistida & CALIFICACIÓN: & \rule{1.5cm}{0.4pt} / 5.0 \\ \hline
+\rowcolor{icesiLight}
+ESTUDIANTE 1: & \rule{4.5cm}{0.4pt} & CÓDIGO: & \rule{2.2cm}{0.4pt} \\ \hline
+ESTUDIANTE 2: & \rule{4.5cm}{0.4pt} & CÓDIGO: & \rule{2.2cm}{0.4pt} \\ \hline
+\end{tabularx}
+
+\vspace{0.12cm}
+
+% =========================================================================
+% SECCIÓN 1: CONTEXTO Y DESCRIPCIÓN DEL RETO
+% =========================================================================
+\sectionBadge{Contexto del Problema \& Arquitectura Multi-Tier}
+
+\subsection{Descripción del Desafío de Ingeniería DevOps}
+La organización \textbf{Icesi Tech Solutions} requiere modernizar su plataforma de inventario de productos compuesta por dos componentes desacoplados:
+\begin{enumerate}[leftmargin=*,itemsep=1.5pt,topsep=1.5pt]
+  \item \textbf{Backend REST (\texttt{product-api}):} Microservicio en \textbf{Spring Boot 3 (Java 17)} con JPA y base de datos H2 en memoria, encargado de exponer operaciones CRUD de productos (\texttt{GET, POST, PUT, DELETE /api/products}).
+  \item \textbf{Frontend SPA (\texttt{product-frontend}):} Interfaz de usuario en \textbf{React 18 + Vite + TypeScript} que consume el API a través de la variable de entorno \texttt{VITE\_API\_URL}.
+\end{enumerate}
+
+Actualmente el equipo no posee automatización: las pruebas, compilaciones y despliegues se ejecutan manualmente. El objetivo de este taller es estructurar el ciclo completo de entrega continua implementando \textbf{Multi-Stage Dockerfiles}, orquestación con \textbf{Docker Compose} y un pipeline declarativo de 4 jobs en \textbf{GitHub Actions}.
+
+\vspace{0.08cm}
+\noindent
+\small
+\begin{tabularx}{\textwidth}{|L{2.8cm}|X|L{3.5cm}|}
+\hline
+\rowcolor{icesiLight}
+\textbf{Componente} & \textbf{Tecnología \& Stack} & \textbf{Puerto / Endpoint} \\ \hline
+\textbf{Backend REST} & Java 17, Spring Boot 3.2, Spring Data JPA, H2 & Puerto \texttt{8080} (\texttt{/api/products}) \\ \hline
+\textbf{Frontend SPA} & React 18, TypeScript, Vite 5, Nginx Alpine & Puerto \texttt{3000} (Proxy: \texttt{/}) \\ \hline
+\textbf{Orquestación} & Docker Compose v2 (Red Bridge \texttt{product-network}) & \texttt{docker compose up -d} \\ \hline
+\textbf{CI/CD Pipeline} & GitHub Actions (\texttt{.github/workflows/ci-cd.yml}) & 4 Jobs (Test, Lint, Build, Smoke) \\ \hline
+\end{tabularx}
+
+\newpage
+
+% =========================================================================
+% PÁGINA 2: PROCEDIMIENTO EXPERIMENTAL (FASES 1, 2 Y 3)
+% =========================================================================
+\sectionBadge{Procedimiento Experimental \& Tareas a Desarrollar}
+
+\subsection{Fase 1: Pruebas Unitarias y Compilación de Artefactos (30 min)}
+En el código base suministrado en \texttt{codigo\_base/}:
+\begin{enumerate}[leftmargin=*,label=\textbf{\alph*)},itemsep=2pt,topsep=2pt]
+  \item En \texttt{backend/}, ejecute la suite de pruebas unitarias y de controlador con Maven:
+  \begin{lstlisting}[style=bashstyle]
+cd backend && mvn clean test
+  \end{lstlisting}
+  Verifique que \texttt{ProductServiceTest} y \texttt{ProductControllerTest} reporten 100\% de éxito.
+  \item En \texttt{frontend/}, valide la consistencia de tipos TypeScript y genere el build de producción:
+  \begin{lstlisting}[style=bashstyle]
+cd frontend && npm install && npm run lint && npm run build
+  \end{lstlisting}
+\end{enumerate}
+
+\subsection{Fase 2: Contenerización Multi-Stage con Docker (30 min)}
+Diseñe y optimice los archivos \texttt{Dockerfile} aplicando buenas prácticas de reducción de peso y seguridad:
+\begin{itemize}[leftmargin=*,itemsep=2.5pt,topsep=2pt]
+  \item \textbf{Backend (\texttt{backend/Dockerfile}):}
+    \begin{itemize}[itemsep=1pt]
+      \item \textit{Stage 1 (Builder):} \texttt{maven:3.9.6-alpine}. Descarga de dependencias en caché y compilación (\texttt{mvn package -DskipTests}).
+      \item \textit{Stage 2 (Runtime):} \texttt{eclipse-temurin:17-jre-alpine}. Copia del archivo \texttt{.jar}, usuario no root (\texttt{appuser}) y puerto \texttt{8080}.
+    \end{itemize}
+  \item \textbf{Frontend (\texttt{frontend/Dockerfile}):}
+    \begin{itemize}[itemsep=1pt]
+      \item \textit{Stage 1 (Builder):} \texttt{node:20-alpine}. Instalación limpia (\texttt{npm install}) y generación de estáticos (\texttt{npm run build}).
+      \item \textit{Stage 2 (Runtime):} \texttt{nginx:alpine}. Copia de estáticos \texttt{dist/} hacia Nginx con soporte de fallback SPA en \texttt{nginx.conf}.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Fase 3: Orquestación Multicontenedor con Docker Compose (20 min)}
+Complete el archivo \texttt{docker-compose.yml} para orquestar la ejecución conjunta de los servicios:
+\begin{enumerate}[leftmargin=*,label=\textbf{\alph*)},itemsep=2pt,topsep=2pt]
+  \item Declare una red compartida tipo puente (\texttt{product-network}).
+  \item Configure el \textit{healthcheck} en el backend validando la respuesta HTTP en \texttt{http://localhost:8080/api/products}.
+  \item Configure la directiva \texttt{depends\_on} con \texttt{condition: service\_healthy} en el contenedor frontend.
+  \item Levante el entorno completo y compruebe su funcionamiento en el navegador (\texttt{http://localhost:3000}):
+  \begin{lstlisting}[style=bashstyle]
+docker compose up -d --build
+docker compose ps
+curl -i http://localhost:8080/api/products
+  \end{lstlisting}
+\end{enumerate}
+
+\newpage
+
+% =========================================================================
+% PÁGINA 3: FASE 4 Y CUESTIONARIO TÉCNICO
+% =========================================================================
+\subsection{Fase 4: Pipeline Declarativo en GitHub Actions (30 min)}
+Configure el flujo de automatización en \texttt{.github/workflows/ci-cd.yml} estructurado en 4 etapas:
+\begin{enumerate}[leftmargin=*,label=\textbf{\alph*)},itemsep=2.5pt,topsep=2pt]
+  \item \textbf{Job 1 (\texttt{test-backend}):} Setup JDK 17 (Temurin), ejecución de \texttt{mvn test} y carga del artefacto JAR (\texttt{upload-artifact}).
+  \item \textbf{Job 2 (\texttt{test-frontend}):} Setup Node 20, verificación estática (\texttt{npm run lint}) y compilación del bundle.
+  \item \textbf{Job 3 (\texttt{build-docker}):} Construcción de imágenes Docker utilizando \texttt{docker/build-push-action} con tags versionados.
+  \item \textbf{Job 4 (\texttt{smoke-test}):} Despliegue con \texttt{docker compose up -d} y validación de disponibilidad mediante consultas \texttt{curl} automatizadas.
+\end{enumerate}
+
+\vspace{0.18cm}
+
+% =========================================================================
+% SECCIÓN 3: PREGUNTAS DE ANÁLISIS TÉCNICO
+% =========================================================================
+\sectionBadge{Cuestionario de Análisis \& Conceptos DevOps (10 min)}
+
+Responda brevemente a las siguientes preguntas con base en la experiencia de laboratorio:
+\begin{enumerate}[leftmargin=*,label=\textbf{\arabic*.},itemsep=4pt,topsep=3pt]
+  \item \textbf{Inmutabilidad y Multi-Stage:} ¿Por qué no se debe incluir el SDK completo de Java (JDK) ni el compilador Maven en la imagen Docker final de producción? ¿Qué impacto tiene esta decisión en el tamaño de la imagen y en la superficie de ataque (\textit{CVEs})?
+  \item \textbf{Shift-Left Testing en CI:} Explique qué sucede si un desarrollador introduce un cambio que rompe una prueba unitaria en el Backend. ¿Cómo protege el pipeline de GitHub Actions la estabilidad de la rama \texttt{main}?
+  \item \textbf{Pruebas de Humo (Smoke Testing):} ¿Cuál es la diferencia fundamental entre una prueba unitaria (\textit{Unit Test}) ejecutada en la fase de build y una prueba de humo (\textit{Smoke Test}) ejecutada tras levantar los contenedores?
+\end{enumerate}
+
+\newpage
+
+% =========================================================================
+% PÁGINA 4: RÚBRICA MODULARIZADA DE EVALUACIÓN Y ENTREGA
+% =========================================================================
+\sectionBadge{Rúbrica de Evaluación Modularizada por Punto (Escala 0.0 a 5.0)}
+
+\vspace{0.08cm}
+\noindent
+\setlength{\tabcolsep}{3.5pt}
+\fontsize{7.5}{9.5}\selectfont
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{|L{2.4cm}|C{0.6cm}|X|X|X|}
+\hline
+\rowcolor{icesiLight}
+\textbf{Punto Entregable} & \textbf{Pts} & \textbf{Excelente (4.5 -- 5.0)} & \textbf{Aceptable (3.0 -- 4.4)} & \textbf{Insuficiente (0.0 -- 2.9)} \\ \hline
+\textbf{2.1. Dockerfile Backend} & \textbf{0.5} & Multi-stage impecable (Maven builder $\rightarrow$ JRE 17 slim), usuario no root (\texttt{appuser}) y cache. & Multi-stage funcional pero usa imagen pesada (JDK) o ejecuta como root. & Dockerfile de una sola etapa o genera imágenes de tamaño excesivo (>500MB). \\ \hline
+\textbf{2.2. Dockerfile Frontend} & \textbf{0.5} & Multi-stage eficiente (Node $\rightarrow$ Nginx Alpine), archivo \texttt{nginx.conf} con fallback SPA. & Frontend en Nginx funcional pero sin configuración adecuada de SPA. & Servidor web no levanta o sirve estáticos de forma incorrecta (404 en rutas). \\ \hline
+\textbf{3.1. Docker Compose} & \textbf{1.2} & Orquestación completa (\texttt{product-network}), healthchecks condicionales y puertos funcionales. & Stack levanta pero sin healthchecks o dependencias declaradas. & Error al levantar el stack o conflicto de puertos y redes en Docker. \\ \hline
+\textbf{4.1. GitHub Actions CI} & \textbf{1.8} & Workflow declarativo con 4 jobs (Test, Lint, Docker Build, Smoke Test) en verde (\textit{Passing}). & Pipeline funcional pero con jobs secuenciales innecesarios o sin cache. & Pipeline falla, no ejecuta pruebas de humo o sintaxis YAML incorrecta. \\ \hline
+\textbf{5.1. Análisis Técnico} & \textbf{1.0} & Respuestas técnicas rigurosas sobre inmutabilidad y Shift-Left, con bitácora ética de IAG. & Respuestas breves o bitácora de prompts incompleta. & Respuestas erróneas conceptualmente o no incluye análisis. \\ \hline
+\rowcolor{icesiLight}
+\textbf{CALIFICACIÓN TOTAL} & \textbf{5.0} & \multicolumn{3}{c|}{\textbf{Escala Institucional Universidad Icesi: Aprobatoria $\ge$ 3.0 $\bullet$ Duración Máxima: 2 Horas}} \\ \hline
+\end{tabularx}
+
+\vspace{0.20cm}
+
+% =========================================================================
+% SECCIÓN DE ENTREGABLES
+% =========================================================================
+\noindent
+{\color{icesiBlue}\textbf{\rule{2.5pt}{8.5pt}}}~\textbf{\fontsize{8.5}{11}\selectfont INSTRUCCIONES DE ENTREGA} \hfill {\fontsize{7.5}{9}\selectfont\color{icesiMuted}\textbf{MODALIDAD}}\\[-0.22cm]
+{\color{icesiBorder}\hrule height 0.5pt}\vspace{0.08cm}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=2pt]
+  \item \textbf{Repositorio en GitHub:} Subir el código base con las soluciones implementadas y verificar que el workflow de \textbf{GitHub Actions esté en Verde (\textit{Passing})}.
+  \item \textbf{Documento de Resultados (PDF):} Adjuntar en la plataforma de entrega este documento diligenciado con:
+    \begin{itemize}[itemsep=1pt]
+      \item Enlace al repositorio privado en la organización con acceso al docente.
+      \item Captura de pantalla de la ejecución exitosa de los 4 jobs de GitHub Actions.
+      \item Respuestas al cuestionario de análisis técnico de la Sección 3.
+    \end{itemize}
+\end{enumerate}
+
+\end{document}
