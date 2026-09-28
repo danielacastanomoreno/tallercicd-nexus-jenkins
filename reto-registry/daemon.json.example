@@ -1,0 +1,3 @@
+{
+  "insecure-registries": ["<IP-NEXUS>:8082", "<IP-NEXUS>:8083"]
+}

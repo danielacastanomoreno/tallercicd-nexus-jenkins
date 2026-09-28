@@ -1,0 +1,48 @@
+# ==============================================================================
+# Despliegue a partir de ARTEFACTOS descargados de Nexus (sin compilar en el host)
+#   - Imagenes de runtime FIJADAS por digest (variables JRE_IMAGE / NGINX_IMAGE)
+#   - El JAR y el bundle web se montan en solo lectura desde release/<version>/
+#   - Promover o hacer rollback = cambiar APP_VERSION en .env (mismo artefacto)
+#   - El backend NO publica puertos al exterior: solo Nginx (80) es punto de entrada
+# Uso:  docker compose --env-file .env -f docker-compose.artifacts.yml up -d
+# ==============================================================================
+name: product
+
+services:
+  backend:
+    image: ${JRE_IMAGE}
+    container_name: product-backend
+    restart: unless-stopped
+    user: "1001:1001"
+    command: ["java", "-jar", "/opt/app/app.jar"]
+    volumes:
+      - ./release/${APP_VERSION}/product-api-${APP_VERSION}.jar:/opt/app/app.jar:ro
+    expose:
+      - "8080"
+    networks:
+      - product-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/products || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  frontend:
+    image: ${NGINX_IMAGE}
+    container_name: product-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./release/${APP_VERSION}/web:/usr/share/nginx/html:ro
+      - ./release/${APP_VERSION}/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - product-network
+
+networks:
+  product-network:
+    driver: bridge

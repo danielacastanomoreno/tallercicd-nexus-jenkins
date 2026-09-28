@@ -1,0 +1,20 @@
+# Sonatype Nexus Repository (Community Edition) para el laboratorio.
+# Ejecutar en ec2-nexus:   docker compose up -d
+# IMPORTANTE: heap/direct memory reducidos para una instancia de 4 GiB. NO usar en produccion.
+services:
+  nexus:
+    image: sonatype/nexus3:${NEXUS_TAG:-3.95.4}   # etiqueta fija: nunca :latest
+    container_name: nexus
+    restart: unless-stopped
+    ports:
+      - "8081:8081"   # UI + REST + Maven + Raw
+      - "8082:8082"   # Docker hosted (reto)
+      - "8083:8083"   # Docker group  (reto)
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms1200m -Xmx1200m -XX:MaxDirectMemorySize=1200m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
+    volumes:
+      - nexus-data:/nexus-data
+    stop_grace_period: 120s   # apagado limpio de las bases de datos embebidas
+
+volumes:
+  nexus-data:

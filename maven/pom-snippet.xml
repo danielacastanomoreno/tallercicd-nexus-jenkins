@@ -1,0 +1,26 @@
+<!-- ======================================================================
+     Fragmento para backend/pom.xml  (Fase 4 del taller)
+     1) Agregue la propiedad nexus.url dentro de <properties>
+     2) Agregue <distributionManagement> al mismo nivel que <properties>
+     ====================================================================== -->
+
+<properties>
+    <java.version>17</java.version>
+    <!-- URL base de Nexus; se sobreescribe con -Dnexus.url=http://<IP>:8081 -->
+    <nexus.url>http://localhost:8081</nexus.url>
+    <!-- OPCIONAL (experimento de determinismo, Fase 1): fija la marca de tiempo del empaquetado -->
+    <!-- <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp> -->
+</properties>
+
+<distributionManagement>
+    <repository>
+        <id>nexus-releases</id>
+        <name>Nexus - releases inmutables</name>
+        <url>${nexus.url}/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <name>Nexus - snapshots (mutables)</name>
+        <url>${nexus.url}/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>

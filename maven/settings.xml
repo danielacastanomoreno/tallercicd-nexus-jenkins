@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~/.m2/settings.xml  -  Taller: Empaquetamiento y Artefactos con Sonatype Nexus
+  Ingenieria de Software V - Universidad Icesi
+
+  * NINGUNA credencial se escribe aqui: se leen de variables de entorno
+    (NEXUS_URL, NEXUS_USER, NEXUS_PASS). Esto cumple el Factor III (12-Factor)
+    y evita subir secretos a Git.
+  * Los <id> deben coincidir EXACTAMENTE con los <id> de distributionManagement
+    en backend/pom.xml (nexus-releases, nexus-snapshots).
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+
+  <servers>
+    <server>
+      <id>nexus-releases</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASS}</password>
+    </server>
+    <server>
+      <id>nexus-snapshots</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASS}</password>
+    </server>
+    <!-- Credenciales para resolver dependencias a traves del grupo maven-public -->
+    <server>
+      <id>nexus-public</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASS}</password>
+    </server>
+  </servers>
+
+  <mirrors>
+    <!-- Todas las dependencias y plugins se resuelven via Nexus (proxy de Maven Central) -->
+    <mirror>
+      <id>nexus-public</id>
+      <name>Nexus maven-public (group)</name>
+      <url>${env.NEXUS_URL}/repository/maven-public/</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors>
+</settings>

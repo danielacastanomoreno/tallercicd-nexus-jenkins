@@ -1,0 +1,6 @@
+com/icesi/ingesoftv/productapi/model/Product.class
+com/icesi/ingesoftv/productapi/config/DataInitializer.class
+com/icesi/ingesoftv/productapi/service/ProductService.class
+com/icesi/ingesoftv/productapi/repository/ProductRepository.class
+com/icesi/ingesoftv/productapi/ProductApiApplication.class
+com/icesi/ingesoftv/productapi/controller/ProductController.class

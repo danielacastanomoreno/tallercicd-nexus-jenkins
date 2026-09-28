@@ -1,0 +1,5 @@
+scripts/env.sh
+build-release/,
+release/
+.env 
+.env.registry
