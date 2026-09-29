@@ -12,14 +12,29 @@
     
     <groupId>com.icesi.ingesoftv</groupId>
     <artifactId>product-api</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.6</version>
     <name>product-api</name>
     <description>API REST de Gestión de Productos - Taller CI/CD Ingesoft V</description>
     
     <properties>
         <java.version>17</java.version>
+        <nexus.url>http://100.58.91.240:8081</nexus.url>
+        <project.build.outputTimestamp>2026-09-26T01:27:58Z</project.build.outputTimestamp>
     </properties>
-    
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus - releases inmutables</name>
+            <url>${nexus.url}/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>Nexus - snapshots (mutables)</name>
+            <url>${nexus.url}/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -20,6 +20,16 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok("Endpoint de prueba");
+    }
+
+    @GetMapping("/test2")
+    public ResponseEntity<?> test2() {
+        return ResponseEntity.ok("Endpoint de prueba2");
+    }
+
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String category) {
         if (category != null && !category.isBlank()) {
